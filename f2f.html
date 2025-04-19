@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KodNest F2F - Camera Interface</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .k-letter {
+            color: #ffd700;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .content-wrapper {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .camera-container, .input-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .camera-container {
+            width: 600px;
+        }
+
+        .input-container {
+            width: 400px;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-container h2 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .chat-messages {
+            width: 100%;
+            height: 300px;
+            padding: 1rem;
+            margin: 1rem 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            text-align: left;
+            overflow-y: scroll;
+            scrollbar-width: thin;
+            scrollbar-color: #90a4ae #e0e0e0;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #e0e0e0;
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background-color: #90a4ae;
+            border-radius: 4px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background-color: #78909c;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: 20px;
+            margin-right: 5px;
+        }
+
+        .bot-message {
+            background-color: #f5f5f5;
+            margin-left: 5px;
+            margin-right: 20px;
+        }
+
+        .input-area {
+            width: 100%;
+            min-height: 80px;
+            padding: 1rem;
+            margin: 1rem 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            resize: none;
+            font-family: inherit;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .typing-indicator {
+            display: none;
+            color: #666;
+            font-style: italic;
+            margin-top: 0.5rem;
+        }
+
+        .video-container {
+            position: relative;
+            margin: 1rem 0;
+            background: #f0f0f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #videoElement {
+            width: 100%;
+            max-height: 400px;
+            background: #f0f0f0;
+            border-radius: 8px;
+        }
+
+        .camera-placeholder {
+            padding: 4rem;
+            text-align: center;
+            color: #666;
+        }
+
+        .camera-icon {
+            font-size: 3rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .camera-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+            display: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .next-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-left: auto;
+            display: block;
+        }
+
+        .next-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .status-message {
+            margin-top: 1rem;
+            color: #666;
+        }
+
+        .transcription-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 1024px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .transcription-area {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            margin: 1rem 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            resize: none;
+            font-family: inherit;
+            font-size: 1rem;
+            color: #333;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .btn-record {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-record.recording {
+            background-color: #c0392b;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .recording-status {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .next-question-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 1rem;
+            display: none; /* Hidden by default */
+        }
+
+        .next-question-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .next-question-btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo">
+            <span class="k-letter">K</span>odNest
+        </a>
+    </header>
+
+    <main>
+        <div class="content-wrapper">
+            <div class="camera-container">
+                <h2>Face to Face Interview</h2>
+                <div class="video-container">
+                    <video id="videoElement" autoplay playsinline style="display: none;"></video>
+                    <div class="camera-placeholder">
+                        <i class="fas fa-camera camera-icon"></i>
+                        <p>Click 'Start Camera' to begin</p>
+                    </div>
+                </div>
+                <div class="camera-controls">
+                    <button class="btn btn-primary" id="startButton">
+                        <i class="fas fa-video"></i>
+                        Start Camera
+                    </button>
+                    <button class="btn btn-danger" id="stopButton">
+                        <i class="fas fa-video-slash"></i>
+                        Stop Camera
+                    </button>
+                    <button class="btn btn-record" id="recordButton" disabled>
+                        <i class="fas fa-circle"></i>
+                        Record
+                    </button>
+                </div>
+                <p class="recording-status" id="recordingStatus">Recording in progress...</p>
+                <p class="status-message" id="statusMessage"></p>
+            </div>
+
+            <div class="input-container">
+                <h2>Interview Questions</h2>
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Interview messages will appear here -->
+                </div>
+                <button class="next-question-btn" id="nextQuestionBtn">Next Question</button>
+            </div>
+        </div>
+
+        <div class="transcription-container">
+            <h2>Your Answer</h2>
+            <textarea class="transcription-area" placeholder="Record your answer..." readonly></textarea>
+            <button class="next-btn" id="submitAnswer">Submit Answer</button>
+        </div>
+    </main>
+
+    <script>
+        const videoElement = document.getElementById('videoElement');
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const statusMessage = document.getElementById('statusMessage');
+        const cameraPlaceholder = document.querySelector('.camera-placeholder');
+        const recordButton = document.getElementById('recordButton');
+        const recordingStatus = document.getElementById('recordingStatus');
+        
+        let stream = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let isRecording = false;
+        let recognition = null;
+        let currentTranscript = '';
+        let interviewInProgress = false;
+        let currentQuestion = '';
+        let questionCount = 0;
+        const MAX_QUESTIONS = 8; // Maximum number of questions in the interview
+        let canProceedToNext = false;
+        const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+        const submitAnswerBtn = document.getElementById('submitAnswer');
+
+        // Initialize chat with first question
+        function initializeInterview() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+            
+            // Add welcome message
+            addMessage("👋 Hello! I'm your AI interviewer today. I'll ask you questions based on your responses. Let's begin the interview.", false);
+            
+            // Get the first dynamic question
+            getNextQuestion("Start the interview with a professional introduction question.");
+            
+            interviewInProgress = true;
+        }
+
+        // Add message to chat
+        function addMessage(message, isUser = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Process the answer and get next dynamic question
+        async function processAnswer(answer) {
+            if (!answer.trim()) {
+                addMessage("Please provide an answer before proceeding.", false);
+                return;
+            }
+
+            submitAnswerBtn.disabled = true;
+            questionCount++;
+
+            try {
+                // Special handling for the first question
+                if (questionCount === 1) {
+                    const prompt = `You are an AI interviewer evaluating a candidate's self-introduction.
+                                  The candidate's response to "Tell me about yourself" was: "${answer}".
+                                  Provide a detailed evaluation of their response (3-4 sentences).
+                                  Consider:
+                                  1. Professional background and experience
+                                  2. Key skills and strengths mentioned
+                                  3. Career goals and aspirations
+                                  4. Communication style and clarity
+                                  Keep the tone professional and constructive.
+                                  Do not ask any questions - just evaluate their response.`;
+
+                    const feedback = await sendMessageToGemini(prompt);
+                    addMessage(feedback, false);
+
+                    // Enable next question button after detailed evaluation
+                    setTimeout(() => {
+                        nextQuestionBtn.style.display = 'block';
+                        canProceedToNext = true;
+                    }, 1000);
+                } else {
+                    // For subsequent questions
+                    const prompt = `You are an AI interviewer evaluating a candidate's response.
+                                  The candidate's answer to "${currentQuestion}" was: "${answer}".
+                                  Provide a brief, professional acknowledgment and constructive feedback about their answer (2-3 sentences).
+                                  Focus on the strengths of their response and any interesting points they made.
+                                  Keep the tone encouraging and positive.
+                                  Do not ask any questions - just evaluate what they've said.`;
+
+                    const feedback = await sendMessageToGemini(prompt);
+                    addMessage(feedback, false);
+
+                    // Check if we should end the interview
+                    if (questionCount >= MAX_QUESTIONS) {
+                        setTimeout(() => {
+                            addMessage("Thank you for completing the interview! We appreciate your time and thoughtful responses.", false);
+                            interviewInProgress = false;
+                            nextQuestionBtn.style.display = 'none';
+                        }, 1000);
+                    } else {
+                        // Enable the next button for the next question
+                        setTimeout(() => {
+                            nextQuestionBtn.style.display = 'block';
+                            canProceedToNext = true;
+                        }, 1000);
+                    }
+                }
+            } catch (error) {
+                console.error('Error processing answer:', error);
+                addMessage("I apologize, but I had trouble processing your response. Please try submitting again.", false);
+                submitAnswerBtn.disabled = false;
+                questionCount--; // Revert question count if there was an error
+            }
+        }
+
+        // Function to get the next dynamic question
+        async function getNextQuestion(context) {
+            try {
+                const prompt = `You are an AI interviewer. Based on this context: "${context}", 
+                              generate a single, clear interview question that helps evaluate the candidate.
+                              Provide only the question, no additional text.`;
+                
+                const question = await sendMessageToGemini(prompt);
+                currentQuestion = question;
+                addMessage(question, false);
+            } catch (error) {
+                console.error('Error generating question:', error);
+                currentQuestion = "Tell me about yourself";
+                addMessage(currentQuestion, false);
+            }
+        }
+
+        // Handle next question button click
+        nextQuestionBtn.addEventListener('click', () => {
+            if (!canProceedToNext) return;
+            
+            // Reset transcription and recognition
+            currentTranscript = '';
+            const transcriptionArea = document.querySelector('.transcription-area');
+            transcriptionArea.value = '';
+            
+            if (recognition) {
+                recognition.abort(); // Stop current recognition
+                if (isRecording) {
+                    // Start fresh recognition session if still recording
+                    setTimeout(() => {
+                        recognition.start();
+                    }, 100);
+                }
+            }
+            
+            // Get next dynamic question based on previous interaction
+            getNextQuestion(`Previous question: "${currentQuestion}". Generate a follow-up question that builds upon the conversation.`);
+            
+            // Reset button states
+            canProceedToNext = false;
+            nextQuestionBtn.style.display = 'none';
+            submitAnswerBtn.disabled = false;
+        });
+
+        // Update submit button handler
+        submitAnswerBtn.addEventListener('click', function() {
+            const transcriptionArea = document.querySelector('.transcription-area');
+            const answer = transcriptionArea.value.trim();
+            
+            if (answer) {
+                addMessage(answer, true);
+                processAnswer(answer);
+            } else {
+                addMessage("Please record your answer before submitting.", false);
+            }
+        });
+
+        // Initialize speech recognition
+        function initializeSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'en-US';
+                
+                recognition.onresult = (event) => {
+                    const transcriptionArea = document.querySelector('.transcription-area');
+                    let fullTranscript = '';
+
+                    // Only use results from the current recognition session
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        fullTranscript += event.results[i][0].transcript + ' ';
+                    }
+
+                    // Update the transcription area with just the current transcript
+                    transcriptionArea.value = fullTranscript;
+                    transcriptionArea.scrollTop = transcriptionArea.scrollHeight;
+                    currentTranscript = fullTranscript;
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                };
+
+                recognition.onend = () => {
+                    if (isRecording) {
+                        // Start a fresh recognition session
+                        recognition.abort();
+                        setTimeout(() => {
+                            recognition.start();
+                        }, 100);
+                    }
+                };
+            } else {
+                console.error('Speech recognition not supported');
+                statusMessage.textContent = 'Speech recognition not supported in this browser';
+                statusMessage.style.color = '#e74c3c';
+            }
+        }
+
+        // Initialize speech recognition when page loads
+        initializeSpeechRecognition();
+        // Start the interview when page loads
+        initializeInterview();
+
+        // Update startRecording function
+        function startRecording() {
+            if (!isRecording) {
+                currentTranscript = '';
+                document.querySelector('.transcription-area').value = '';
+                
+                recordedChunks = [];
+                const options = { mimeType: 'video/webm;codecs=vp9,opus' };
+                
+                try {
+                    mediaRecorder = new MediaRecorder(stream, options);
+                } catch (e) {
+                    console.error('Error creating MediaRecorder:', e);
+                    return;
+                }
+
+                mediaRecorder.ondataavailable = handleDataAvailable;
+                mediaRecorder.onstop = handleStop;
+                
+                mediaRecorder.start();
+                isRecording = true;
+                recordButton.textContent = 'Stop Recording';
+                recordButton.classList.add('recording');
+                recordingStatus.style.display = 'block';
+
+                // Start fresh recognition session
+                if (recognition) {
+                    recognition.abort();
+                    setTimeout(() => {
+                        recognition.start();
+                    }, 100);
+                }
+            }
+        }
+
+        startButton.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: true,
+                    audio: true // Enable audio for recording
+                });
+                videoElement.srcObject = stream;
+                videoElement.style.display = 'block';
+                cameraPlaceholder.style.display = 'none';
+                startButton.style.display = 'none';
+                stopButton.style.display = 'flex';
+                recordButton.disabled = false; // Enable record button
+                statusMessage.textContent = 'Camera is active';
+                statusMessage.style.color = '#27ae60';
+            } catch (err) {
+                console.error('Error accessing camera:', err);
+                statusMessage.textContent = 'Error accessing camera. Please make sure you have granted camera permissions.';
+                statusMessage.style.color = '#e74c3c';
+            }
+        });
+
+        stopButton.addEventListener('click', () => {
+            if (isRecording) {
+                stopRecording();
+            }
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                videoElement.srcObject = null;
+                videoElement.style.display = 'none';
+                cameraPlaceholder.style.display = 'block';
+                startButton.style.display = 'flex';
+                stopButton.style.display = 'none';
+                recordButton.disabled = true;
+                recordButton.classList.remove('recording');
+                recordingStatus.style.display = 'none';
+                
+                // Clear transcript only when stopping the camera completely
+                currentTranscript = '';
+                document.querySelector('.transcription-area').value = '';
+                
+                statusMessage.textContent = 'Camera stopped';
+                statusMessage.style.color = '#666';
+            }
+        });
+
+        // Recording functionality
+        recordButton.addEventListener('click', () => {
+            if (!isRecording) {
+                startRecording();
+            } else {
+                stopRecording();
+            }
+        });
+
+        function stopRecording() {
+            mediaRecorder.stop();
+            isRecording = false;
+            recordButton.textContent = 'Record';
+            recordButton.classList.remove('recording');
+            recordingStatus.style.display = 'none';
+            
+            // Stop recognition and keep final transcript
+            if (recognition) {
+                recognition.stop();
+            }
+            
+            // Enable submit button after recording stops
+            submitAnswerBtn.disabled = false;
+        }
+
+        function handleDataAvailable(event) {
+            if (event.data.size > 0) {
+                recordedChunks.push(event.data);
+            }
+        }
+
+        function handleStop() {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            
+            // Create FormData and append the blob
+            const formData = new FormData();
+            formData.append('video', blob, `recording-${timestamp}.webm`);
+
+            // Upload to server
+            fetch('http://localhost:3000/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                statusMessage.textContent = 'Recording saved successfully';
+                statusMessage.style.color = '#27ae60';
+            })
+            .catch(error => {
+                console.error('Error uploading recording:', error);
+                statusMessage.textContent = 'Error saving recording';
+                statusMessage.style.color = '#e74c3c';
+            });
+        }
+
+        // AI Chat Implementation
+        const GEMINI_API_KEY = 'AIzaSyA3Ox6wdrRHddt5WsnK-SLOzHtD465gsKc';
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        async function sendMessageToGemini(message) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: message }]
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error('Error:', error);
+                return 'Sorry, I encountered an error. Please try again.';
+            }
+        }
+
+        async function handleUserMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // Add user message to chat
+            addMessage(message, true);
+            userInput.value = '';
+
+            // Show typing indicator
+            typingIndicator.style.display = 'block';
+
+            try {
+                // Get AI response
+                const response = await sendMessageToGemini(message);
+                
+                // Hide typing indicator and add AI response
+                typingIndicator.style.display = 'none';
+                addMessage(response);
+            } catch (error) {
+                typingIndicator.style.display = 'none';
+                addMessage('Sorry, I encountered an error. Please try again.');
+            }
+        }
+
+        // Event listeners for chat
+        sendButton.addEventListener('click', handleUserMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleUserMessage();
+            }
+        });
+    </script>
+</body>
+</html> 
