@@ -306,6 +306,22 @@
             background-color: #bdc3c7;
             cursor: not-allowed;
         }
+
+        .download-btn {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .download-btn:hover {
+            background-color: #27ae60;
+        }
     </style>
 </head>
 <body>
@@ -382,6 +398,7 @@
         let canProceedToNext = false;
         const nextQuestionBtn = document.getElementById('nextQuestionBtn');
         const submitAnswerBtn = document.getElementById('submitAnswer');
+        let lastRecordingBlob = null;
 
         // Initialize chat with first question
         function initializeInterview() {
@@ -693,27 +710,21 @@
 
         function handleStop() {
             const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            lastRecordingBlob = blob;
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
             
-            // Create FormData and append the blob
-            const formData = new FormData();
-            formData.append('video', blob, `recording-${timestamp}.webm`);
+            // Automatically trigger download
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `recording-${timestamp}.webm`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
 
-            // Upload to server
-            fetch('http://localhost:3000/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                statusMessage.textContent = 'Recording saved successfully';
-                statusMessage.style.color = '#27ae60';
-            })
-            .catch(error => {
-                console.error('Error uploading recording:', error);
-                statusMessage.textContent = 'Error saving recording';
-                statusMessage.style.color = '#e74c3c';
-            });
+            statusMessage.textContent = 'Recording downloaded successfully';
+            statusMessage.style.color = '#27ae60';
         }
 
         // AI Chat Implementation
